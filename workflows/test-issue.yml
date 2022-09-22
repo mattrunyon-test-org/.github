@@ -1,0 +1,30 @@
+name: Create documentation ticket
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  create-docs-ticket:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Create Issue
+        id: create-issue
+        if: github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'DocumentationNeeded')
+        uses: dacbd/create-issue-action
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ github.event.pull_request.title }}
+          assignees: ${{ github.event.pull_request.user.login }}
+          body: |
+            This issue was auto-generated based on {{ github.event.pull_request.html_url }} and assigned to its creator.
+
+            The pull request body is copied below.
+
+            {{ github.event.pull_request.body }}
+
+      - name: Comment on PR
+        run: "echo URL: ${{ steps.create-issue.outputs.html_url }}"
